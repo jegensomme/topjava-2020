@@ -4,10 +4,26 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
-public class Meal {
-    private Integer id;
+@NamedQueries({
+        @NamedQuery(name = Meal.ALL_SORTED, query = "SELECT m FROM Meal m WHERE m.user.id=:userId ORDER BY m.dateTime DESC"),
+        @NamedQuery(name = Meal.DELETE, query = "DELETE FROM Meal m WHERE m.id=:id AND m.user.id=:userId"),
+        @NamedQuery(name = Meal.GET_BETWEEN, query = """
+                    SELECT m FROM Meal m 
+                    WHERE m.user.id=:userId AND m.dateTime >= :startDateTime AND m.dateTime < :endDateTime ORDER BY m.dateTime DESC
+                """),
+//        @NamedQuery(name = Meal.UPDATE, query = "UPDATE Meal m SET m.dateTime = :datetime, m.calories= :calories," +
+//                "m.description=:desc where m.id=:id and m.user.id=:userId")
+})
+@Entity
+@Table(name = "meals", uniqueConstraints = {@UniqueConstraint(columnNames = {"user_id", "date_time"}, name = "meals_unique_user_datetime_idx")})
+public class Meal extends AbstractBaseEntity {
+    public static final String ALL_SORTED = "Meal.getAll";
+    public static final String DELETE = "Meal.delete";
+    public static final String GET_BETWEEN = "Meal.getBetween";
 
-    private final LocalDateTime dateTime;
+    @Column(name = "date_time", nullable = false)
+    @NotNull
+    private LocalDateTime dateTime;
 
     private final String description;
 
@@ -18,18 +34,10 @@ public class Meal {
     }
 
     public Meal(Integer id, LocalDateTime dateTime, String description, int calories) {
-        this.id = id;
+        super(id);
         this.dateTime = dateTime;
         this.description = description;
         this.calories = calories;
-    }
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
     }
 
     public LocalDateTime getDateTime() {
@@ -52,8 +60,16 @@ public class Meal {
         return dateTime.toLocalTime();
     }
 
-    public boolean isNew() {
-        return id == null;
+    public void setDateTime(LocalDateTime dateTime) {
+        this.dateTime = dateTime;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public void setCalories(int calories) {
+        this.calories = calories;
     }
 
     @Override
