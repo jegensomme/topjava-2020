@@ -9,7 +9,7 @@
         <constructor-arg name="repository" ref="inmemoryUserRepository"/>
     </bean>
 -->
-    <context:component-scan base-package="ru.javawebinar.**.repository"/>
+    <import resource="spring-cache.xml"/>
 
     <context:component-scan base-package="ru.javawebinar.**.service"/>
 
