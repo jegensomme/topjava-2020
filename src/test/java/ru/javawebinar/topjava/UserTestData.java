@@ -5,11 +5,12 @@ import ru.javawebinar.topjava.model.User;
 
 import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 
 import static ru.javawebinar.topjava.model.AbstractBaseEntity.START_SEQ;
 
 public class UserTestData {
-    public static TestMatcher<User> USER_MATCHER = TestMatcher.usingIgnoringFieldsComparator("registered", "roles");
+    public static TestMatcher<User> USER_MATCHER = TestMatcher.usingIgnoringFieldsComparator("registered", "roles", "meals");
 
     public static final int USER_ID = START_SEQ;
     public static final int ADMIN_ID = START_SEQ + 1;
