@@ -11,7 +11,10 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.javawebinar.topjava.model.Role;
 import ru.javawebinar.topjava.model.User;
 import ru.javawebinar.topjava.repository.UserRepository;
+import ru.javawebinar.topjava.util.ValidationUtil;
 
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -40,29 +43,32 @@ public class JdbcUserRepository implements UserRepository {
 
     private final SimpleJdbcInsert insertUser;
 
+    private final Validator validator;
+
     @Autowired
-    public JdbcUserRepository(JdbcTemplate jdbcTemplate, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
+    public JdbcUserRepository(JdbcTemplate jdbcTemplate,
+                              NamedParameterJdbcTemplate namedParameterJdbcTemplate,
+                              ValidatorFactory validatorFactory) {
         this.insertUser = new SimpleJdbcInsert(jdbcTemplate)
                 .withTableName("users")
                 .usingGeneratedKeyColumns("id");
         this.jdbcTemplate = jdbcTemplate;
         this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
+        this.validator = validatorFactory.getValidator();
     }
 
     @Override
     @Transactional
     public User save(User user) {
+        ValidationUtil.validateEntity(user, validator);
         BeanPropertySqlParameterSource parameterSource = new BeanPropertySqlParameterSource(user);
-
         if (user.isNew()) {
-            Number newKey = insertUser.executeAndReturnKey(parameterSource);
-            user.setId(newKey.intValue());
+            user.setId(insertUser.executeAndReturnKey(parameterSource).intValue());
         } else {
-            int updated = namedParameterJdbcTemplate.update("""
-                UPDATE users SET name=:name, email=:email, password=:password,
-                registered=:registered, enabled=:enabled, calories_per_day=:caloriesPerDay WHERE id=:id
-                """, parameterSource);
-            if (updated == 0) {
+            if (namedParameterJdbcTemplate.update("""
+                    UPDATE users SET name=:name, email=:email, password=:password,
+                    registered=:registered, enabled=:enabled, calories_per_day=:caloriesPerDay
+                    WHERE id=:id""", parameterSource) == 0) {
                 return null;
             }
             jdbcTemplate.update("DELETE FROM user_roles WHERE user_id=?", user.id());
@@ -73,7 +79,6 @@ public class JdbcUserRepository implements UserRepository {
                     ps.setInt(1, user.id());
                     ps.setString(2, r.name());
         });
-
         return user;
     }
 

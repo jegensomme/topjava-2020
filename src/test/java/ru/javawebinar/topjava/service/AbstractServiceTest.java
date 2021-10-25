@@ -1,9 +1,7 @@
 package ru.javawebinar.topjava.service;
 
-import org.junit.Assume;
 import org.junit.ClassRule;
 import org.junit.Rule;
-import org.junit.Test;
 import org.junit.rules.ExternalResource;
 import org.junit.rules.Stopwatch;
 import org.junit.runner.RunWith;
@@ -17,10 +15,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 import ru.javawebinar.topjava.ActiveDbProfileResolver;
 import ru.javawebinar.topjava.TimingRules;
 
-import java.util.Arrays;
 
 import static org.junit.Assert.assertThrows;
-import static ru.javawebinar.topjava.Profiles.JDBC;
 import static ru.javawebinar.topjava.util.ValidationUtil.getRootCause;
 
 @ContextConfiguration({
@@ -51,12 +47,4 @@ abstract public class AbstractServiceTest {
             }
         });
     }
-
-    @Test
-    public void createWithException() {
-        Assume.assumeTrue(Arrays.stream(environment.getActiveProfiles()).noneMatch(JDBC::equals));
-        doCreateWithException();
-    }
-
-    public abstract void doCreateWithException();
 }

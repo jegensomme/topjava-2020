@@ -70,6 +70,9 @@
         <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager"
         p:dataSource-ref="dataSource"/>
 
+        <bean id="validationFactory" class="javax.validation.Validation"
+              factory-method="buildDefaultValidatorFactory"/>
+
         <tx:annotation-driven/>
     </beans>
 

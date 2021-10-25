@@ -1,7 +1,13 @@
 package ru.javawebinar.topjava.util;
 
 import ru.javawebinar.topjava.model.AbstractBaseEntity;
+import ru.javawebinar.topjava.model.User;
 import ru.javawebinar.topjava.util.exception.NotFoundException;
+
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
+import javax.validation.Validator;
+import java.util.Set;
 
 public class ValidationUtil {
     private ValidationUtil() {
@@ -39,6 +45,13 @@ public class ValidationUtil {
             entity.setId(id);
         } else if (entity.id() != id) {
             throw new IllegalArgumentException(entity + " must be with id=" + id);
+        }
+    }
+
+    public static <T extends AbstractBaseEntity> void validateEntity(T entity, Validator validator) {
+        Set<ConstraintViolation<T>> constraintViolations = validator.validate(entity);
+        if (!constraintViolations.isEmpty()) {
+            throw new ConstraintViolationException(constraintViolations);
         }
     }
 
