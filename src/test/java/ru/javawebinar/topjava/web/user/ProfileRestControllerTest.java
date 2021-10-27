@@ -38,7 +38,8 @@ class ProfileRestControllerTest extends AbstractControllerTest {
     @Test
     void update() throws Exception {
         User updated = getUpdated();
-        perform(MockMvcRequestBuilders.put(REST_URL).contentType(MediaType.APPLICATION_JSON)
+        perform(MockMvcRequestBuilders.put(REST_URL)
+                .contentType(MediaType.APPLICATION_JSON)
                 .content(JsonUtil.writeValue(updated)))
                 .andDo(print())
                 .andExpect(status().isNoContent());
