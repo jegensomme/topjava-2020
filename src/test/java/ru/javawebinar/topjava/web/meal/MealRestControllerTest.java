@@ -14,6 +14,7 @@ import ru.javawebinar.topjava.web.AbstractControllerTest;
 import ru.javawebinar.topjava.web.json.JsonUtil;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.Month;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -87,9 +88,12 @@ class MealRestControllerTest extends AbstractControllerTest {
 
     @Test
     void getBetween() throws Exception {
-        String start = LocalDate.of(2020, Month.JANUARY, 30).atStartOfDay().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-        String end = LocalDate.of(2020, Month.JANUARY, 30).atTime(23, 59).format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-        perform(MockMvcRequestBuilders.get(String.format(REST_URL + "filter?start=%s&end=%s", start, end)))
+        String startDate = LocalDate.of(2020, Month.JANUARY, 30).format(DateTimeFormatter.ISO_LOCAL_DATE);
+        String startTime = LocalTime.of(0, 0).format(DateTimeFormatter.ISO_LOCAL_TIME);
+        String endDate = LocalDate.of(2020, Month.JANUARY, 30).format(DateTimeFormatter.ISO_LOCAL_DATE);
+        String endTime = LocalTime.of(23, 59).format(DateTimeFormatter.ISO_LOCAL_TIME);
+        perform(MockMvcRequestBuilders.get(REST_URL + String.format("filter?startDate=%s&startTime=%s&endDate=%s&endTime=%s",
+                startDate, startTime, endDate, endTime)))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
