@@ -1,8 +1,6 @@
-var ctx;
+let ctx;
 
-// $(document).ready(function () {
 $(function () {
-    // https://stackoverflow.com/a/5064235/548473
     ctx = {
         ajaxUrl: "profile/meals/",
         datatableApi: $("#datatable").DataTable({
@@ -37,3 +35,7 @@ $(function () {
     };
     makeEditable();
 });
+
+function filter() {
+    updateTable(ctx.ajaxUrl + "filter" + "?" + $('#filterForm').serialize())
+}
