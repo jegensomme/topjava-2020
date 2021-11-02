@@ -1,5 +1,7 @@
 let ctx;
 
+let filterForm;
+
 $(function () {
     ctx = {
         ajaxUrl: "profile/meals/",
@@ -34,8 +36,14 @@ $(function () {
         })
     };
     makeEditable();
+    filterForm = $('#filterForm')
 });
 
 function filter() {
-    updateTable(ctx.ajaxUrl + "filter" + "?" + $('#filterForm').serialize())
+    updateTable(ctx.ajaxUrl + "filter" + "?" + filterForm.serialize())
+}
+
+function resetFilter() {
+    $(':input', filterForm).val('')
+    updateTable(ctx.ajaxUrl)
 }
