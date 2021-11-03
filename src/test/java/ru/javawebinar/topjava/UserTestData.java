@@ -5,6 +5,7 @@ import ru.javawebinar.topjava.model.User;
 
 import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 
 import static ru.javawebinar.topjava.model.AbstractBaseEntity.START_SEQ;
 
@@ -37,5 +38,11 @@ public class UserTestData {
         User disabled = new User(user);
         disabled.setEnabled(false);
         return disabled;
+    }
+
+    public static User getWithMeals() {
+        User withMeals = new User(user);
+        withMeals.setMeals(MealTestData.meals);
+        return withMeals;
     }
 }

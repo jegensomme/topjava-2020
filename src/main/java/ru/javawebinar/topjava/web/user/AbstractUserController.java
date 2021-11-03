@@ -44,13 +44,18 @@ public abstract class AbstractUserController {
         service.update(user);
     }
 
-    public void setEnabling(int id, boolean enabled) {
-        log.info("set enabling {} for user {}", enabled, id);
-        service.setEnabling(id, enabled);
-    }
-
     public User getByMail(String email) {
         log.info("getByEmail {}", email);
         return service.getByEmail(email);
+    }
+
+    public void setEnabling(int id, boolean enabled) {
+        log.info("setEnabling {} for user {}", enabled, id);
+        service.setEnabling(id, enabled);
+    }
+
+    public User getWithMeals(int id) {
+        log.info("getWithMeals {}", id);
+        return service.getWithMeals(id);
     }
 }
