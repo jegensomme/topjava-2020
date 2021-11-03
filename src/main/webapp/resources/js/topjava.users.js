@@ -43,3 +43,13 @@ $(function () {
     };
     makeEditable();
 });
+
+function changeEnabling(id, enabled) {
+    $.ajax({
+        type: "PATCH",
+        url: ctx.ajaxUrl + id + `?enabled=${enabled}`,
+    }).done(function () {
+        updateTable(ctx.ajaxUrl);
+        successNoty("Saved");
+    });
+}
