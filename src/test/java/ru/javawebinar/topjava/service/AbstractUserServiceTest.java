@@ -92,5 +92,7 @@ public abstract class AbstractUserServiceTest extends AbstractServiceTest {
     void setEnabling() {
         service.setEnabling(USER_ID, false);
         USER_MATCHER.assertMatch(service.get(USER_ID), getDisabled());
+        service.setEnabling(USER_ID, true);
+        USER_MATCHER.assertMatch(service.get(USER_ID), user);
     }
 }

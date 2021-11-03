@@ -91,10 +91,15 @@ class AdminRestControllerTest extends AbstractControllerTest {
 
     @Test
     void setEnabling() throws Exception {
+        testSetEnabling(false, getDisabled());
+        testSetEnabling(true, user);
+    }
+
+    private void testSetEnabling(boolean enabled, User expected) throws Exception {
         perform(MockMvcRequestBuilders.patch(REST_URL + USER_ID)
-                .param("enabled", "false"))
+                .param("enabled", String.valueOf(enabled)))
                 .andExpect(status().isNoContent());
-        USER_MATCHER.assertMatch(userService.get(USER_ID), getDisabled());
+        USER_MATCHER.assertMatch(userService.get(USER_ID), expected);
     }
 
     @Test
