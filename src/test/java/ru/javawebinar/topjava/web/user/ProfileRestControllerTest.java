@@ -3,6 +3,7 @@ package ru.javawebinar.topjava.web.user;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Profiles;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import ru.javawebinar.topjava.UserTestData;
@@ -11,12 +12,10 @@ import ru.javawebinar.topjava.service.UserService;
 import ru.javawebinar.topjava.web.AbstractControllerTest;
 import ru.javawebinar.topjava.web.json.JsonUtil;
 
-import java.util.Arrays;
-
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static ru.javawebinar.topjava.Profiles.JDBC;
+import static ru.javawebinar.topjava.Profiles.DATAJPA;
 import static ru.javawebinar.topjava.UserTestData.*;
 import static ru.javawebinar.topjava.web.user.ProfileRestController.REST_URL;
 
@@ -53,10 +52,10 @@ class ProfileRestControllerTest extends AbstractControllerTest {
 
     @Test
     void getWithMeals() throws Exception {
-        Assumptions.assumeTrue(Arrays.stream(environment.getActiveProfiles()).noneMatch(JDBC::equals));
+        Assumptions.assumeTrue(environment.acceptsProfiles(Profiles.of(DATAJPA)));
         perform(MockMvcRequestBuilders.get(REST_URL + "/with-meals"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(USER_MATCHER.contentJson(UserTestData.getWithMeals()));
+                .andExpect(USER_MATCHER_WITH_MEALS.contentJson(UserTestData.getWithMeals()));
     }
 }

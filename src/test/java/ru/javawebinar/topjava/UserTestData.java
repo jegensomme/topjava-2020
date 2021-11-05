@@ -5,12 +5,18 @@ import ru.javawebinar.topjava.model.User;
 
 import java.util.Collections;
 import java.util.Date;
-import java.util.List;
-
+import static org.assertj.core.api.Assertions.assertThat;
 import static ru.javawebinar.topjava.model.AbstractBaseEntity.START_SEQ;
 
 public class UserTestData {
     public static final TestMatcher<User> USER_MATCHER = TestMatcher.usingIgnoringFieldsComparator(User.class, "registered", "meals");
+    public static final TestMatcher<User> USER_MATCHER_WITH_MEALS = new TestMatcher<>(User.class,
+            (a, e) -> assertThat(a).usingRecursiveComparison().ignoringFields("registered", "meals.user").isEqualTo(e),
+            (a, e) -> {
+                throw new UnsupportedOperationException();
+            }
+    );
+
 
     public static final int USER_ID = START_SEQ;
     public static final int ADMIN_ID = START_SEQ + 1;
