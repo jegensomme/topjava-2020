@@ -1,28 +1,33 @@
 var ctx;
 
-// $(document).ready(function () {
+function updateFilteredTable() {
+    $.ajax({
+        type: "GET",
+        url: "profile/meals/filter",
+        data: $("#filter").serialize()
+    }).done(updateTableByData);
+}
+
+function clearFilter() {
+    $("#filter")[0].reset();
+    $.get("profile/meals/", updateTableByData);
+}
+
 $(function () {
-    // https://stackoverflow.com/a/5064235/548473
     ctx = {
-        ajaxUrl: "admin/users/",
+        ajaxUrl: "profile/meals/",
         datatableApi: $("#datatable").DataTable({
             "paging": false,
             "info": true,
             "columns": [
                 {
-                    "data": "name"
+                    "data": "dateTime"
                 },
                 {
-                    "data": "email"
+                    "data": "description"
                 },
                 {
-                    "data": "roles"
-                },
-                {
-                    "data": "enabled"
-                },
-                {
-                    "data": "registered"
+                    "data": "calories"
                 },
                 {
                     "defaultContent": "Edit",
@@ -36,13 +41,11 @@ $(function () {
             "order": [
                 [
                     0,
-                    "asc"
+                    "desc"
                 ]
             ]
         }),
-        updateTable: function () {
-            $.get("admin/users/", updateTableByData);
-        }
+        updateTable: updateFilteredTable
     };
     makeEditable();
 });
