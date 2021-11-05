@@ -44,12 +44,15 @@ $(function () {
     makeEditable();
 });
 
-function changeEnabling(id, enabled) {
+function changeEnabling(id, cb) {
+    const enabled = cb.checked
     $.ajax({
         type: "PATCH",
-        url: ctx.ajaxUrl + id + `?enabled=${enabled}`,
+        url: ctx.ajaxUrl + id + `?enabled=${enabled}`
     }).done(function () {
-        updateTable(ctx.ajaxUrl);
-        successNoty("Saved");
+        $(cb).closest("tr").attr("data-userEnabled", enabled)
+        successNoty(enabled ? "Activated" : "Deactivated");
+    }).fail(function () {
+        cb.checked = !enabled;
     });
 }
