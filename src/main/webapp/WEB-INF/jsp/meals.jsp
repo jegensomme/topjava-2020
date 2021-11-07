@@ -73,7 +73,7 @@
                     </td>
                     <td>${meal.description}</td>
                     <td>${meal.calories}</td>
-                    <td><a><span class="fa fa-pencil"></span></a></td>
+                    <td><a onclick="updateRow(${meal.id})"><span class="fa fa-pencil"></span></a></td>
                     <td><a onclick="deleteRow(${meal.id})"><span class="fa fa-remove"></span></a></td>
                 </tr>
             </c:forEach>
@@ -126,4 +126,9 @@
 </div>
 <jsp:include page="fragments/footer.jsp"/>
 </body>
+<jsp:include page="fragments/i18n.jsp"/>
+<script type="text/javascript">
+    i18n["addTitle"] = '<spring:message code="meal.add"/>';
+    i18n["editTitle"] = '<spring:message code="meal.edit"/>';
+</script>
 </html>

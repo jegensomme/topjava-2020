@@ -1,24 +1,36 @@
 package ru.javawebinar.topjava.to;
 
+import org.hibernate.validator.constraints.Range;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.beans.ConstructorProperties;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
 public class MealTo extends BaseTo {
 
+    @NotNull
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     private final LocalDateTime dateTime;
 
+    @NotBlank
+    @Size(min = 2, max = 120)
     private final String description;
 
-    private final int calories;
+    @NotNull
+    @Range(min = 10, max = 5000)
+    private final Integer calories;
 
 //    private final AtomicBoolean excess;      // filteredByAtomic (or Boolean[])
 //    private final Boolean excess;            // filteredByReflection
 //    private final Supplier<Boolean> excess;  // filteredByClosure
-    private boolean excess;
+    private Boolean excess;
 
     @ConstructorProperties({"id", "dateTime", "description", "calories", "excess"})
-    public MealTo(Integer id, LocalDateTime dateTime, String description, int calories, boolean excess) {
+    public MealTo(Integer id, LocalDateTime dateTime, String description, Integer calories, Boolean excess) {
         super(id);
         this.dateTime = dateTime;
         this.description = description;
@@ -31,7 +43,7 @@ public class MealTo extends BaseTo {
 //    }
 
     // for filteredBySetterRecursion
-    public void setExcess(boolean excess) {
+    public void setExcess(Boolean excess) {
         this.excess = excess;
     }
 
@@ -56,7 +68,7 @@ public class MealTo extends BaseTo {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         MealTo mealTo = (MealTo) o;
-        return calories == mealTo.calories &&
+        return Objects.equals(calories, mealTo.calories) &&
                 excess == mealTo.excess &&
                 Objects.equals(id, mealTo.id) &&
                 Objects.equals(dateTime, mealTo.dateTime) &&
