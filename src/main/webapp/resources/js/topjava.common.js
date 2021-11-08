@@ -8,6 +8,30 @@ function makeEditable() {
 
     // solve problem with cache in IE: https://stackoverflow.com/a/4303862/548473
     $.ajaxSetup({cache: false});
+    $.datetimepicker.setDateFormatter({
+        parseDate: function (date, format) {
+            const d = moment(date, format);
+            return d.isValid() ? d.toDate() : false;
+        },
+        formatDate: function (date, format) {
+            return moment(date).format(format);
+        },
+    });
+    $('#dateTime').datetimepicker({
+        format:'yyyy-MM-DD HH:mm'
+    })
+    $('#startDate, #endDate').each(function (idx, elt) {
+        $(elt).datetimepicker({
+            timepicker: false,
+            format:'yyyy-MM-DD'
+        });
+    });
+    $('#startTime, #endTime').each(function (idx, elt) {
+        $(elt).datetimepicker({
+            datepicker: false,
+            format:'HH:mm'
+        });
+    });
 }
 
 function add() {
@@ -21,6 +45,9 @@ function updateRow(id) {
     $("#modalTitle").html(i18n["editTitle"]);
     $.get(ctx.ajaxUrl + id, function (data) {
         $.each(data, function (key, value) {
+            if (key === "dateTime") {
+                value = value.replace("T", " ");
+            }
             form.find("input[name='" + key + "']").val(value);
         });
         $('#editRow').modal();
@@ -44,6 +71,8 @@ function updateTableByData(data) {
 }
 
 function save() {
+    let input = form.find("input[name='dateTime']")
+    input.val(input.val().replace(" ", "T"))
     $.ajax({
         type: "POST",
         url: ctx.ajaxUrl,
