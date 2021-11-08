@@ -45,6 +45,7 @@
         <webjars-bootstrap.version>4.5.3</webjars-bootstrap.version>
         <webjars-jquery.version>3.5.1</webjars-jquery.version>
         <webjars-datetimepicker.version>2.5.20-1</webjars-datetimepicker.version>
+        <webjars-datetime.version>1.0.1</webjars-datetime.version>
         <webjars-noty.version>3.1.4</webjars-noty.version>
         <webjars-datatables.version>1.10.21</webjars-datatables.version>
     </properties>
@@ -262,6 +263,11 @@
             <groupId>org.webjars</groupId>
             <artifactId>datetimepicker</artifactId>
             <version>${webjars-datetimepicker.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.webjars</groupId>
+            <artifactId>momentjs</artifactId>
+            <version>2.29.1</version>
         </dependency>
         <dependency>
             <groupId>org.webjars.bower</groupId>
