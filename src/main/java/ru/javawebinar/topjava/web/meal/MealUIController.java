@@ -9,6 +9,7 @@ import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.to.MealTo;
 import ru.javawebinar.topjava.util.ValidationUtil;
 import ru.javawebinar.topjava.util.exception.IllegalRequestDataException;
+import ru.javawebinar.topjava.web.validators.MealDuplicateValidator;
 
 import javax.validation.Valid;
 import java.time.LocalDate;
@@ -18,6 +19,12 @@ import java.util.List;
 @RestController
 @RequestMapping(value = "/profile/meals", produces = MediaType.APPLICATION_JSON_VALUE)
 public class MealUIController extends AbstractMealController {
+
+    private final MealDuplicateValidator validator;
+
+    public MealUIController(MealDuplicateValidator validator) {
+        this.validator = validator;
+    }
 
     @Override
     @GetMapping
@@ -41,6 +48,7 @@ public class MealUIController extends AbstractMealController {
     @PostMapping
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void createOrUpdate(@Valid Meal meal, BindingResult result) {
+        validator.validate(meal, result);
         if (result.hasErrors()) {
             throw new IllegalRequestDataException(ValidationUtil.getErrorMessage(result));
         }

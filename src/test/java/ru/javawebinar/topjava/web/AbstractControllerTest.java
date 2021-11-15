@@ -49,7 +49,7 @@ public abstract class AbstractControllerTest {
     private WebApplicationContext webApplicationContext;
 
     @Autowired
-    private MessageSource messageSource;
+    protected MessageSource messageSource;
 
     public void assumeDataJpa() {
         Assumptions.assumeTrue(env.acceptsProfiles(org.springframework.core.env.Profiles.of(Profiles.DATAJPA)), "DATA-JPA only");
@@ -66,13 +66,5 @@ public abstract class AbstractControllerTest {
 
     protected ResultActions perform(MockHttpServletRequestBuilder builder) throws Exception {
         return mockMvc.perform(builder);
-    }
-
-    protected String getMessage(String code) {
-        return getMessage(code, null);
-    }
-
-    protected String getMessage(String code, Object[] args) {
-        return messageSource.getMessage(code, args, Locale.US);
     }
 }

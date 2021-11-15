@@ -11,6 +11,7 @@ import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.to.MealTo;
 import ru.javawebinar.topjava.util.ValidationUtil;
 import ru.javawebinar.topjava.util.exception.IllegalRequestDataException;
+import ru.javawebinar.topjava.web.validators.MealDuplicateValidator;
 
 import javax.validation.Valid;
 import java.net.URI;
@@ -22,6 +23,12 @@ import java.util.List;
 @RequestMapping(value = MealRestController.REST_URL, produces = MediaType.APPLICATION_JSON_VALUE)
 public class MealRestController extends AbstractMealController {
     static final String REST_URL = "/rest/profile/meals";
+
+    private final MealDuplicateValidator validator;
+
+    public MealRestController(MealDuplicateValidator validator) {
+        this.validator = validator;
+    }
 
     @Override
     @GetMapping("/{id}")
@@ -45,6 +52,7 @@ public class MealRestController extends AbstractMealController {
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void update(@Valid @RequestBody Meal meal, @PathVariable int id, BindingResult bindingResult) {
+        validator.validate(meal, bindingResult);
         if (bindingResult.hasErrors()) {
             throw new IllegalRequestDataException(ValidationUtil.getErrorMessage(bindingResult));
         }
@@ -53,6 +61,7 @@ public class MealRestController extends AbstractMealController {
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Meal> createWithLocation(@Valid @RequestBody Meal meal, BindingResult bindingResult) {
+        validator.validate(meal, bindingResult);
         if (bindingResult.hasErrors()) {
             throw new IllegalRequestDataException(ValidationUtil.getErrorMessage(bindingResult));
         }

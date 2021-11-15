@@ -6,13 +6,12 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import ru.javawebinar.topjava.TestUtil;
 import ru.javawebinar.topjava.UserTestData;
 import ru.javawebinar.topjava.model.User;
 import ru.javawebinar.topjava.service.UserService;
-import ru.javawebinar.topjava.util.exception.ErrorInfo;
 import ru.javawebinar.topjava.util.exception.NotFoundException;
 import ru.javawebinar.topjava.web.AbstractControllerTest;
-import ru.javawebinar.topjava.web.json.JsonUtil;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -134,8 +133,7 @@ class AdminRestControllerTest extends AbstractControllerTest {
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(ERROR_MATCHER.contentJson(createInvalid))
                 .andReturn();
-        ErrorInfo errorInfo = JsonUtil.readValue(result.getResponse().getContentAsString(), ErrorInfo.class);
-        assertEquals(errorInfo.getDetail(), getMessage("email.duplicate"));
+        TestUtil.assertErrorMessage(result, messageSource, "email.duplicate");
     }
 
     @Test

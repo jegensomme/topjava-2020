@@ -1,5 +1,6 @@
 package ru.javawebinar.topjava.service;
 
+import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
@@ -7,8 +8,10 @@ import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.repository.MealRepository;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
+import static org.springframework.dao.support.DataAccessUtils.singleResult;
 import static ru.javawebinar.topjava.util.DateTimeUtil.atStartOfDayOrMin;
 import static ru.javawebinar.topjava.util.DateTimeUtil.atStartOfNextDayOrMax;
 import static ru.javawebinar.topjava.util.ValidationUtil.checkNotFoundWithId;
@@ -32,6 +35,11 @@ public class MealService {
 
     public List<Meal> getBetweenInclusive(@Nullable LocalDate startDate, @Nullable LocalDate endDate, int userId) {
         return repository.getBetweenHalfOpen(atStartOfDayOrMin(startDate), atStartOfNextDayOrMax(endDate), userId);
+    }
+
+    public Meal getByDateTime(@NonNull LocalDateTime dateTime, int userId) {
+        List<Meal> result = repository.getBetweenHalfOpen(dateTime, dateTime.plusMinutes(1), userId);
+        return checkNotFoundWithId(singleResult(result), userId);
     }
 
     public List<Meal> getAll(int userId) {
