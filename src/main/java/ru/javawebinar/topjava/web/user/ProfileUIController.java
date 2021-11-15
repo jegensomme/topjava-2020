@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.support.SessionStatus;
 import ru.javawebinar.topjava.to.UserTo;
+import ru.javawebinar.topjava.web.EmailDuplicateValidator;
 import ru.javawebinar.topjava.web.SecurityUtil;
 
 import javax.validation.Valid;
@@ -16,6 +17,12 @@ import javax.validation.Valid;
 @RequestMapping("/profile")
 public class ProfileUIController extends AbstractUserController {
 
+    private final EmailDuplicateValidator validator;
+
+    public ProfileUIController(EmailDuplicateValidator validator) {
+        this.validator = validator;
+    }
+
     @GetMapping
     public String profile() {
         return "profile";
@@ -23,6 +30,7 @@ public class ProfileUIController extends AbstractUserController {
 
     @PostMapping
     public String updateProfile(@Valid UserTo userTo, BindingResult result, SessionStatus status) {
+        validator.validate(userTo, result);
         if (result.hasErrors()) {
             return "profile";
         } else {
@@ -42,6 +50,7 @@ public class ProfileUIController extends AbstractUserController {
 
     @PostMapping("/register")
     public String saveRegister(@Valid UserTo userTo, BindingResult result, SessionStatus status, ModelMap model) {
+        validator.validate(userTo, result);
         if (result.hasErrors()) {
             model.addAttribute("register", true);
             return "profile";

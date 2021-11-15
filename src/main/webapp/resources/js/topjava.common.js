@@ -95,6 +95,7 @@ function successNoty(key) {
 
 function failNoty(jqXHR) {
     closeNoty();
+    debugger;
     const errorInfo = JSON.parse(jqXHR.responseText)
     failedNote = errorInfo.type === "VALIDATION_ERROR" ? failValidationNoty(errorInfo)
         : new Noty({

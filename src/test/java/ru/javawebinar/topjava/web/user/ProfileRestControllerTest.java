@@ -17,6 +17,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static ru.javawebinar.topjava.TestUtil.*;
 import static ru.javawebinar.topjava.UserTestData.*;
+import static ru.javawebinar.topjava.model.Role.USER;
 import static ru.javawebinar.topjava.web.user.ProfileRestController.REST_URL;
 
 class ProfileRestControllerTest extends AbstractControllerTest {
@@ -69,6 +70,15 @@ class ProfileRestControllerTest extends AbstractControllerTest {
         perform(MockMvcRequestBuilders.post(REST_URL + "/register")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(JsonUtil.writeValue(new User())))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(ERROR_MATCHER.contentJson(registerInvalid));
+    }
+
+    @Test
+    void registerWithDuplicatedEmail() throws Exception {
+        perform(MockMvcRequestBuilders.post(REST_URL + "/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(JsonUtil.writeValue(new User(null, "New", "user@yandex.ru", "password", 1000, USER))))
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(ERROR_MATCHER.contentJson(registerInvalid));
     }

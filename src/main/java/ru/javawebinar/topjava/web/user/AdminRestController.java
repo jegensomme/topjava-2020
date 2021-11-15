@@ -9,6 +9,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import ru.javawebinar.topjava.model.User;
 import ru.javawebinar.topjava.util.ValidationUtil;
 import ru.javawebinar.topjava.util.exception.IllegalRequestDataException;
+import ru.javawebinar.topjava.web.EmailDuplicateValidator;
 
 import javax.validation.Valid;
 import java.net.URI;
@@ -19,6 +20,12 @@ import java.util.List;
 public class AdminRestController extends AbstractUserController {
 
     static final String REST_URL = "/rest/admin/users";
+
+    private final EmailDuplicateValidator validator;
+
+    public AdminRestController(EmailDuplicateValidator validator) {
+        this.validator = validator;
+    }
 
     @Override
     @GetMapping
@@ -34,6 +41,7 @@ public class AdminRestController extends AbstractUserController {
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<User> createWithLocation(@Valid @RequestBody User user, BindingResult bindingResult) {
+        validator.validate(user, bindingResult);
         if (bindingResult.hasErrors()) {
             throw new IllegalRequestDataException(ValidationUtil.getErrorMessage(bindingResult));
         }

@@ -79,7 +79,7 @@ public class ValidationUtil {
 
     public static String getErrorMessage(BindingResult result) {
         return result.getFieldErrors().stream()
-                .map(fe -> String.format("[%s] %s", fe.getField(), fe.getDefaultMessage()))
+                .map(fe -> fe.getDefaultMessage() == null ? "" : fe.getDefaultMessage().formatted(fe.getField()))
                 .collect(Collectors.joining("<br>"));
     }
 }

@@ -10,6 +10,7 @@ import ru.javawebinar.topjava.model.User;
 import ru.javawebinar.topjava.to.UserTo;
 import ru.javawebinar.topjava.util.ValidationUtil;
 import ru.javawebinar.topjava.util.exception.IllegalRequestDataException;
+import ru.javawebinar.topjava.web.EmailDuplicateValidator;
 
 import javax.validation.Valid;
 import java.net.URI;
@@ -20,6 +21,12 @@ import static ru.javawebinar.topjava.web.SecurityUtil.authUserId;
 @RequestMapping(value = ProfileRestController.REST_URL, produces = MediaType.APPLICATION_JSON_VALUE)
 public class ProfileRestController extends AbstractUserController {
     static final String REST_URL = "/rest/profile";
+
+    private final EmailDuplicateValidator validator;
+
+    public ProfileRestController(EmailDuplicateValidator validator) {
+        this.validator = validator;
+    }
 
     @GetMapping
     public User get() {
@@ -35,6 +42,7 @@ public class ProfileRestController extends AbstractUserController {
     @PostMapping(value = "/register", consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<User> register(@Valid @RequestBody UserTo userTo, BindingResult bindingResult) {
+        validator.validate(userTo, bindingResult);
         if (bindingResult.hasErrors()) {
             throw new IllegalRequestDataException(ValidationUtil.getErrorMessage(bindingResult));
         }

@@ -19,6 +19,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static ru.javawebinar.topjava.TestUtil.*;
 import static ru.javawebinar.topjava.UserTestData.*;
+import static ru.javawebinar.topjava.model.Role.USER;
 
 class AdminRestControllerTest extends AbstractControllerTest {
 
@@ -119,6 +120,16 @@ class AdminRestControllerTest extends AbstractControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .with(userHttpBasic(admin))
                 .content(JsonUtil.writeValue(new User())))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(ERROR_MATCHER.contentJson(createInvalid));
+    }
+
+    @Test
+    void createWithDuplicatedEmail() throws Exception {
+        perform(MockMvcRequestBuilders.post(REST_URL)
+                .contentType(MediaType.APPLICATION_JSON)
+                .with(userHttpBasic(admin))
+                .content(JsonUtil.writeValue(new User(null, "New", "user@yandex.ru", "password", 1000, USER))))
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(ERROR_MATCHER.contentJson(createInvalid));
     }
