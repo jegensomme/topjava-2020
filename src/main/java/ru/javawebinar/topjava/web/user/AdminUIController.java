@@ -8,6 +8,7 @@ import ru.javawebinar.topjava.model.User;
 import ru.javawebinar.topjava.to.UserTo;
 import ru.javawebinar.topjava.util.ValidationUtil;
 import ru.javawebinar.topjava.util.exception.IllegalRequestDataException;
+import ru.javawebinar.topjava.web.validators.EmailDuplicateValidator;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -15,6 +16,12 @@ import java.util.List;
 @RestController
 @RequestMapping(value = "/admin/users", produces = MediaType.APPLICATION_JSON_VALUE)
 public class AdminUIController extends AbstractUserController {
+
+    private final EmailDuplicateValidator validator;
+
+    public AdminUIController(EmailDuplicateValidator validator) {
+        this.validator = validator;
+    }
 
     @Override
     @GetMapping
@@ -38,6 +45,7 @@ public class AdminUIController extends AbstractUserController {
     @PostMapping
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void createOrUpdate(@Valid UserTo userTo, BindingResult result) {
+        validator.validate(userTo, result);
         if (result.hasErrors()) {
             throw new IllegalRequestDataException(ValidationUtil.getErrorMessage(result));
         }

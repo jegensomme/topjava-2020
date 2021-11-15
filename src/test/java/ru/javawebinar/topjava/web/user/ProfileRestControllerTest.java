@@ -3,15 +3,18 @@ package ru.javawebinar.topjava.web.user;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import ru.javawebinar.topjava.model.User;
 import ru.javawebinar.topjava.service.UserService;
 import ru.javawebinar.topjava.to.UserTo;
 import ru.javawebinar.topjava.util.UserUtil;
+import ru.javawebinar.topjava.util.exception.ErrorInfo;
 import ru.javawebinar.topjava.web.AbstractControllerTest;
 import ru.javawebinar.topjava.web.json.JsonUtil;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -68,9 +71,21 @@ class ProfileRestControllerTest extends AbstractControllerTest {
     void registerInvalid() throws Exception {
         perform(MockMvcRequestBuilders.post(REST_URL + "/register")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(JsonUtil.writeValue(new User())))
+                .content(JsonUtil.writeValue(new UserTo())))
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(ERROR_MATCHER.contentJson(registerInvalid));
+    }
+
+    @Test
+    void registerWithDuplicatedEmail() throws Exception {
+        MvcResult result =perform(MockMvcRequestBuilders.post(REST_URL + "/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(JsonUtil.writeValue(new UserTo(null, "New", "user@yandex.ru", "password", 1000))))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(ERROR_MATCHER.contentJson(registerInvalid))
+                .andReturn();
+        ErrorInfo errorInfo = JsonUtil.readValue(result.getResponse().getContentAsString(), ErrorInfo.class);
+        assertEquals(errorInfo.getDetail(), getMessage("email.duplicate"));
     }
 
     @Test
