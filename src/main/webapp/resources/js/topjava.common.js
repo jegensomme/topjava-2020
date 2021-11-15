@@ -95,13 +95,24 @@ function successNoty(key) {
 
 function failNoty(jqXHR) {
     closeNoty();
-    var errorInfo = jqXHR.responseJSON;
-    failedNote = new Noty({
+    const errorInfo = JSON.parse(jqXHR.responseText)
+    failedNote = errorInfo.type === "VALIDATION_ERROR" ? failValidationNoty(errorInfo)
+        : new Noty({
         text: "<span class='fa fa-lg fa-exclamation-circle'></span> &nbsp;" + i18n["common.errorStatus"] + ": " + jqXHR.status +
             "<br>" + errorInfo.type + "<br>" + errorInfo.detail,
         type: "error",
         layout: "bottomRight"
-    }).show();
+    });
+    failedNote.show();
+}
+
+function failValidationNoty(errorInfo) {
+    return new Noty({
+        text: "<span class='fa fa-lg fa-exclamation-circle'></span> &nbsp;" + i18n["common.data.validation.error"] +
+            "<br>" + errorInfo.detail,
+        type: "error",
+        layout: "bottomRight"
+    });
 }
 
 function renderEditBtn(data, type, row) {
