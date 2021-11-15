@@ -107,6 +107,7 @@ function failNoty(jqXHR) {
 }
 
 function failValidationNoty(errorInfo) {
+    debugger;
     return new Noty({
         text: "<span class='fa fa-lg fa-exclamation-circle'></span> &nbsp;" + i18n["common.data.validation.error"] +
             "<br>" + errorInfo.detail,
