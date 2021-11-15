@@ -31,10 +31,10 @@
                     </sec:authorize>
                 </li>
                 <li class="nav-item dropdown">
-                    <a class="dropdown-toggle nav-link my-1 ml-2" data-toggle="dropdown">${cookie['org.springframework.web.servlet.i18n.CookieLocaleResolver.LOCALE'].value}</a>
+                    <a class="dropdown-toggle nav-link my-1 ml-2" data-toggle="dropdown">${pageContext.response.locale}</a>
                     <div class="dropdown-menu">
-                        <a class="dropdown-item" href="?lang=en">English</a>
-                        <a class="dropdown-item" href="?lang=ru">Русский</a>
+                        <a class="dropdown-item" href="${requestScope['javax.servlet.forward.request_uri']}?lang=en">English</a>
+                        <a class="dropdown-item" href="${requestScope['javax.servlet.forward.request_uri']}?lang=ru">Русский</a>
                     </div>
                 </li>
             </ul>
