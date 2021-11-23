@@ -1,53 +1,67 @@
 package ru.javawebinar.topjava.web;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.context.support.MessageSourceAccessor;
-import org.springframework.web.bind.annotation.ControllerAdvice;
+import lombok.AllArgsConstructor;
+import org.springframework.boot.web.error.ErrorAttributeOptions;
+import org.springframework.boot.web.servlet.error.ErrorAttributes;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.lang.NonNull;
+import org.springframework.validation.BindException;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.NoHandlerFoundException;
-import ru.javawebinar.topjava.util.ValidationUtil;
-import ru.javawebinar.topjava.util.exception.ApplicationException;
-import ru.javawebinar.topjava.util.exception.ErrorType;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+import ru.javawebinar.topjava.error.AppException;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
+import java.util.stream.Collectors;
 
-@ControllerAdvice
-public class GlobalExceptionHandler {
-    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+@RestControllerAdvice
+@AllArgsConstructor
+public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
+    public static final String EXCEPTION_DUPLICATE_EMAIL = "User with this email already exists";
 
-    private final MessageSourceAccessor messageSourceAccessor;
+    private final ErrorAttributes errorAttributes;
 
-    public GlobalExceptionHandler(MessageSourceAccessor messageSourceAccessor) {
-        this.messageSourceAccessor = messageSourceAccessor;
+    @Override
+    @NonNull
+    protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
+                                                                  @NonNull HttpHeaders headers, @NonNull HttpStatus status, @NonNull WebRequest request) {
+        return handleBindingErrors(ex.getBindingResult(), request);
     }
 
-    @ExceptionHandler(NoHandlerFoundException.class)
-    public ModelAndView wrongRequest(HttpServletRequest req, NoHandlerFoundException e) {
-        return logAndGetExceptionView(req, e, false, ErrorType.WRONG_REQUEST, null);
+    @Override
+    @NonNull
+    protected ResponseEntity<Object> handleBindException(BindException ex, @NonNull HttpHeaders headers, @NonNull HttpStatus status, @NonNull WebRequest request) {
+        return handleBindingErrors(ex.getBindingResult(), request);
     }
 
-    @ExceptionHandler(ApplicationException.class)
-    public ModelAndView updateRestrictionException(HttpServletRequest req, ApplicationException appEx) {
-        return logAndGetExceptionView(req, appEx, false, appEx.getType(), appEx.getMsgCode());
+    @ExceptionHandler(AppException.class)
+    public ResponseEntity<?> appException(WebRequest request, AppException ex) {
+        return createResponseEntity(getDefaultBody(request, ex.getOptions(), null), ex.getStatus());
     }
 
-    @ExceptionHandler(Exception.class)
-    public ModelAndView defaultErrorHandler(HttpServletRequest req, Exception e) throws Exception {
-        log.error("Exception at request " + req.getRequestURL(), e);
-        return logAndGetExceptionView(req, e, true, ErrorType.APP_ERROR, null);
+    private ResponseEntity<Object> handleBindingErrors(BindingResult result, WebRequest request) {
+        String msg = result.getFieldErrors().stream()
+                .map(fe -> String.format("[%s] %s", fe.getField(), fe.getDefaultMessage()))
+                .collect(Collectors.joining("\n"));
+        return createResponseEntity(getDefaultBody(request, ErrorAttributeOptions.defaults(), msg), HttpStatus.UNPROCESSABLE_ENTITY);
     }
 
-    private ModelAndView logAndGetExceptionView(HttpServletRequest req, Exception e, boolean logException, ErrorType errorType, String code) {
-        Throwable rootCause = ValidationUtil.logAndGetRootCause(log, req, e, logException, errorType);
+    private Map<String, Object> getDefaultBody(WebRequest request, ErrorAttributeOptions options, String msg) {
+        Map<String, Object> body = errorAttributes.getErrorAttributes(request, options);
+        if (msg != null) {
+            body.put("message", msg);
+        }
+        return body;
+    }
 
-        ModelAndView mav = new ModelAndView("exception",
-                Map.of("exception", rootCause, "message", code != null ? messageSourceAccessor.getMessage(code) : ValidationUtil.getMessage(rootCause),
-                        "typeMessage", messageSourceAccessor.getMessage(errorType.getErrorCode()),
-                        "status", errorType.getStatus()));
-        mav.setStatus(errorType.getStatus());
-        return mav;
+    private <T> ResponseEntity<T> createResponseEntity(Map<String, Object> body, HttpStatus status) {
+        body.put("status", status.value());
+        body.put("error", status.getReasonPhrase());
+        return (ResponseEntity<T>) ResponseEntity.status(status).body(body);
     }
 }

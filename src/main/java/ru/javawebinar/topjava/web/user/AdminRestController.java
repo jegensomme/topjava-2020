@@ -1,43 +1,42 @@
 package ru.javawebinar.topjava.web.user;
 
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindException;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-import ru.javawebinar.topjava.View;
 import ru.javawebinar.topjava.model.User;
 
+import javax.validation.Valid;
 import java.net.URI;
 import java.util.List;
 
+import static ru.javawebinar.topjava.util.ValidationUtil.checkNew;
+
 @RestController
 @RequestMapping(value = AdminRestController.REST_URL, produces = MediaType.APPLICATION_JSON_VALUE)
+@Slf4j
+@CacheConfig(cacheNames = "users")
 public class AdminRestController extends AbstractUserController {
 
     static final String REST_URL = "/rest/admin/users";
 
     @Override
-    @GetMapping
-    public List<User> getAll() {
-        return super.getAll();
-    }
-
-    @Override
     @GetMapping("/{id}")
-    public User get(@PathVariable int id) {
+    public ResponseEntity<User> get(@PathVariable int id) {
         return super.get(id);
     }
 
-    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<User> createWithLocation(@Validated(View.Web.class) @RequestBody User user) {
-        User created = super.create(user);
-        URI uriOfNewResource = ServletUriComponentsBuilder.fromCurrentContextPath()
-                .path(REST_URL + "/{id}")
-                .buildAndExpand(created.getId()).toUri();
-        return ResponseEntity.created(uriOfNewResource).body(created);
+    @GetMapping("/{id}/with-meals")
+    public ResponseEntity<User> getWithMeals(@PathVariable int id) {
+        return super.getWithMeals(id);
     }
 
     @Override
@@ -47,29 +46,47 @@ public class AdminRestController extends AbstractUserController {
         super.delete(id);
     }
 
+    @GetMapping
+    @Cacheable
+    public List<User> getAll() {
+        log.info("getAll");
+        return repository.findAll(Sort.by(Sort.Direction.ASC, "name", "email"));
+    }
+
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
+    @CacheEvict(allEntries = true)
+    public ResponseEntity<User> createWithLocation(@Valid @RequestBody User user) {
+        log.info("create {}", user);
+        checkNew(user);
+        User created = prepareAndSave(user);
+        URI uriOfNewResource = ServletUriComponentsBuilder.fromCurrentContextPath()
+                .path(REST_URL + "/{id}")
+                .buildAndExpand(created.getId()).toUri();
+        return ResponseEntity.created(uriOfNewResource).body(created);
+    }
+
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.NO_CONTENT)
+    @CacheEvict(allEntries = true)
     public void update(@RequestBody User user, @PathVariable int id) throws BindException {
         validateBeforeUpdate(user, id);
         log.info("update {} with id={}", user, id);
-        service.update(user);
+        prepareAndSave(user);
     }
 
-    @Override
     @GetMapping("/by")
-    public User getByMail(@RequestParam String email) {
-        return super.getByMail(email);
+    public ResponseEntity<User> getByEmail(@RequestParam String email) {
+        log.info("getByEmail {}", email);
+        return ResponseEntity.of(repository.getByEmail(email));
     }
 
-    @Override
     @PatchMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Transactional
+    @CacheEvict(allEntries = true)
     public void enable(@PathVariable int id, @RequestParam boolean enabled) {
-        super.enable(id, enabled);
-    }
-
-    @GetMapping("/{id}/with-meals")
-    public User getWithMeals(@PathVariable int id) {
-        return super.getWithMeals(id);
+        log.info(enabled ? "enable {}" : "disable {}", id);
+        User user = repository.getExisted(id);
+        user.setEnabled(enabled);
     }
 }

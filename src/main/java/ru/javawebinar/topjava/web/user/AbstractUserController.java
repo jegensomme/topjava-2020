@@ -1,95 +1,64 @@
 package ru.javawebinar.topjava.web.user;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindException;
 import org.springframework.validation.DataBinder;
-import org.springframework.validation.Validator;
+import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.InitBinder;
 import ru.javawebinar.topjava.HasId;
-import ru.javawebinar.topjava.View;
 import ru.javawebinar.topjava.model.User;
-import ru.javawebinar.topjava.service.UserService;
-import ru.javawebinar.topjava.to.UserTo;
+import ru.javawebinar.topjava.repository.UserRepository;
 import ru.javawebinar.topjava.util.UserUtil;
 
-import java.util.List;
-
 import static ru.javawebinar.topjava.util.ValidationUtil.assureIdConsistent;
-import static ru.javawebinar.topjava.util.ValidationUtil.checkNew;
+import static ru.javawebinar.topjava.util.ValidationUtil.checkSingleModification;
 
+@Slf4j
 public abstract class AbstractUserController {
-    protected final Logger log = LoggerFactory.getLogger(getClass());
 
     @Autowired
-    protected UserService service;
+    protected UserRepository repository;
 
     @Autowired
     private UniqueMailValidator emailValidator;
 
     @Autowired
-    @Qualifier("defaultValidator")
-    private Validator validator;
+    private LocalValidatorFactoryBean defaultValidator;
 
     @InitBinder
     protected void initBinder(WebDataBinder binder) {
         binder.addValidators(emailValidator);
     }
 
-    public List<User> getAll() {
-        log.info("getAll");
-        return service.getAll();
-    }
-
-    public User get(int id) {
+    public ResponseEntity<User> get(int id) {
         log.info("get {}", id);
-        return service.get(id);
+        return ResponseEntity.of(repository.findById(id));
     }
 
-    public User create(UserTo userTo) {
-        log.info("create from to {}", userTo);
-        return create(UserUtil.createNewFromTo(userTo));
-    }
-
-    public User create(User user) {
-        log.info("create {}", user);
-        checkNew(user);
-        return service.create(user);
-    }
-
+    @CacheEvict(value = "users", allEntries = true)
     public void delete(int id) {
         log.info("delete {}", id);
-        service.delete(id);
+        checkSingleModification(repository.delete(id), "User id=" + id + " not found");
     }
 
-    public void update(UserTo userTo, int id) {
-        log.info("update {} with id={}", userTo, id);
-        service.update(userTo);
-    }
-
-    public User getByMail(String email) {
-        log.info("getByEmail {}", email);
-        return service.getByEmail(email);
-    }
-
-    public void enable(int id, boolean enabled) {
-        log.info(enabled ? "enable {}" : "disable {}", id);
-        service.enable(id, enabled);
-    }
-
-    public User getWithMeals(int id) {
+    public ResponseEntity<User> getWithMeals(int id) {
         log.info("getWithMeals {}", id);
-        return service.getWithMeals(id);
+        return ResponseEntity.of(repository.getWithMeals(id));
+    }
+
+    protected User prepareAndSave(User user) {
+        return repository.save(UserUtil.prepareToSave(user));
     }
 
     protected void validateBeforeUpdate(HasId user, int id) throws BindException {
         assureIdConsistent(user, id);
         DataBinder binder = new DataBinder(user);
-        binder.addValidators(emailValidator, validator);
-        binder.validate(View.Web.class);
+        binder.addValidators(emailValidator, defaultValidator);
+        binder.validate();
         if (binder.getBindingResult().hasErrors()) {
             throw new BindException(binder.getBindingResult());
         }

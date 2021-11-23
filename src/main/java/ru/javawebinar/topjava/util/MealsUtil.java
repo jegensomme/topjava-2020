@@ -1,6 +1,9 @@
 package ru.javawebinar.topjava.util;
+
+import lombok.experimental.UtilityClass;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.to.MealTo;
+
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Collection;
@@ -9,10 +12,8 @@ import java.util.Map;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+@UtilityClass
 public class MealsUtil {
-
-    private MealsUtil() {
-    }
 
     public static List<MealTo> getTos(Collection<Meal> meals, int caloriesPerDay) {
         return filterByPredicate(meals, caloriesPerDay, meal -> true);
@@ -34,6 +35,7 @@ public class MealsUtil {
                 .map(meal -> createTo(meal, caloriesSumByDate.get(meal.getDate()) > caloriesPerDay))
                 .collect(Collectors.toList());
     }
+
     public static MealTo createTo(Meal meal, boolean excess) {
         return new MealTo(meal.getId(), meal.getDateTime(), meal.getDescription(), meal.getCalories(), excess);
     }

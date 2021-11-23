@@ -1,25 +1,25 @@
 package ru.javawebinar.topjava.repository;
 
+import org.springframework.data.jpa.repository.EntityGraph;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 import ru.javawebinar.topjava.model.User;
 
-import java.util.List;
+import java.util.Optional;
 
-public interface UserRepository {
-    // null if not found, when updated
-    User save(User user);
+@Transactional(readOnly = true)
+public interface UserRepository extends BaseRepository<User> {
+    @Transactional
+    @Modifying
+    @Query("DELETE FROM User u WHERE u.id=:id")
+    int delete(@Param("id") int id);
 
-    // false if not found
-    boolean delete(int id);
+    Optional<User> getByEmail(String email);
 
-    // null if not found
-    User get(int id);
-
-    // null if not found
-    User getByEmail(String email);
-
-    List<User> getAll();
-
-    default User getWithMeals(int id) {
-        throw new UnsupportedOperationException();
-    }
+    //    https://stackoverflow.com/a/46013654/548473
+    @EntityGraph(attributePaths = {"meals"}, type = EntityGraph.EntityGraphType.LOAD)
+    @Query("SELECT u FROM User u WHERE u.id=?1")
+    Optional<User> getWithMeals(int id);
 }
